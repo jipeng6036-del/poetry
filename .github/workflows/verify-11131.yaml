@@ -6,19 +6,25 @@ permissions:
   contents: read
 jobs:
   baseline:
+    name: ${{ matrix.revision.name }} Python ${{ matrix.python }}
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     strategy:
       fail-fast: false
       matrix:
-        python: ['3.10', '3.12']
+        python: ['3.10.22', '3.12.15']
+        revision:
+          - name: upstream
+            sha: 63bba274f8ea6bc9a064f5328fa6c67bce617cc1
+          - name: pr-head
+            sha: 78f5e2bea59b22a91e5dbcd3569072950cb6f795
     env:
       PYTHONWARNDEFAULTENCODING: 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: python-poetry/poetry
-          ref: 63bba274f8ea6bc9a064f5328fa6c67bce617cc1
+          ref: ${{ matrix.revision.sha }}
           persist-credentials: false
       - uses: ./.github/actions/bootstrap-poetry
         with:
