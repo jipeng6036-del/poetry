@@ -1,0 +1,33 @@
+name: Verify 11131 unchanged upstream baseline
+on:
+  push:
+    branches: [verify/11131-upstream-helper]
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.12']
+    env:
+      PYTHONWARNDEFAULTENCODING: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: python-poetry/poetry
+          ref: 63bba274f8ea6bc9a064f5328fa6c67bce617cc1
+          persist-credentials: false
+      - uses: ./.github/actions/bootstrap-poetry
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: ./.github/actions/poetry-install
+        with:
+          args: --with github-actions
+      - name: Run unchanged baseline suite
+        run: poetry run pytest --integration -v
+        env:
+          POETRY_TEST_INTEGRATION_GIT_USERNAME: ${{ github.actor }}
+          POETRY_TEST_INTEGRATION_GIT_PASSWORD: ${{ github.token }}
